@@ -1,0 +1,429 @@
+#Week 1:
+#White House Most Visited
+#Who is being visited the most at the White House. The following is our code and analysis.
+
+#Load whitehouse visits csv file (whitehouse-waves-2013_6.csv) and call it “visits”.
+#as.is =”TRUE” will take the data as it is.
+visits = read.csv("whitehouse-waves-2013_6.csv", as.is=TRUE)
+
+#Create a new field called “visiteefullname” by combining the fields “visits$visitee_namelast” and “visitee_namelast”
+
+visits$visiteefullname <- paste(visits$visitee_namefirst, visits$visitee_namelast, sep=" ")
+
+#Convert visiteefullname to lowercase and Unicode
+visits$visiteefullname = tolower(iconv(visits$visiteefullname, to="UTF-8"))
+
+#Create a new field called “visitorfullname” by combining the fields “visits$NAMEFIRST” and “visitee_NAMELAST”
+
+visits$visitorfullname <- paste(visits$NAMEFIRST, visits$NAMELAST, sep=" ")
+
+#Convert visitorfullname to lowercase and Unicode
+visits$visitorfullname = tolower(iconv(visits$visitorfullname, to="UTF-8"))
+
+#Create a new dataframe called visitee to store visitee information
+visitee <- paste(visits$visiteefullname)
+
+#Visitees with greater than 1000 visits
+head(sort(table(visitee),decreasing=TRUE),24)
+
+#23 people were visited over 1000 times (leaving out “visitors office”)
+    visitors office              potus      potus/flotus       jeanne lambrew 
+              85474               13559              3846                2685 
+victoria mccullough        kyle lierman    gautam raghavan             flotus  
+               2519                2261              2171                1728 
+     heather foster          ronnie cho        todd park                     
+               1648                1647              1439                1428 
+      paul monteiro       gene sperling        zach kelly     julie rodriguez 
+               1404                1373              1236                1187 
+        nancy hogan        nate perkins   chelsea bollinger   patrick hidalgo 
+               1170                1160              1157                1062 
+     hallie schneir        brad jenkins    karen richardson      jason tengco 
+1029	             1026              1025               1013 
+
+Who are these people?
+1)	POTUS – President Barrack Obama
+2)	FLOTUS – First Lady Michelle Obama
+3)	Jeanne Lambrew - Deputy Director of the new White House Office of Health Reform.
+4)	Victoria McCullough - Organizing for Action.
+5)	Kyle Lierman - Public Engagement Liaison, coordinates activities for activities for Cabinet’s Public Engagement Offices and Champions of Change Program.
+6)	Gautam Raghavan - Associate Director of Public Engagement and LGBT Liaison.
+7)	Heather Foster - Public Engagement Advisor, coordinates outreach activities for Aftrican-Americans.
+8)	Ronnie Cho - White House Liaison to Young Americans.
+9)	Todd Park - United States Chief Technology Officer and in this role serves as an Assistant to the President.
+10)	Paul Monteiro - Public Engagement Advisor, regional affairs.
+11)	Gene Sperling - Assistant to the President for Economic Policy and Director of the National Economic Council.
+12)	Zach Kelly - Special Assistant to the Deputy Chief of Staff and works with the Office of Public Engagement on Jewish outreach.
+13)	Julie Rodriguez - Deputy Director of Public Engagement and liaison for Latino Affairs and Immigration.
+14)	Nancy Hogan - Director of Presidential Personnel, in charge of hiring political appointees.
+15)	Nate Perkins - Staff assistant at the White House's Office of Management and Administration.
+16)	Chelsea Bollinger – Staff Assistant
+17)	Patrick Hidalgo - Deputy Director of the White House Business Council.
+18)	Hallie Schneir – Associate Director of Public Engagement, manages the White House’s outreach to women and girls around the country.
+19)	Brad Jenkins - Associate Director heading up coalition-building programs across a range of communities including non-profits, foundations, labor, and business.
+20)	Karen Richardson - Public Engagement Advisor responsible for conducting outreach to the international community, working on foreign policy issues.
+21)	Jason Tengco - Advisor on Public Engagement for the White House Initiative on Asian Americans and Pacific Islanders.
+
+#1428 visits have no visiteename. Cross verify this in the visits dataframe
+> sum(visits$visiteefullname == " ")
+ [1] 1428
+
+#In order to find out who is visiting someone without using a visitee name, I tried to first create a substring called “Nullvisitee” with all the rows where visiteefullname == NULL
+Nullvisitee <- visits[visits$visiteefullname == " ",]
+
+
+#Then, I viewed Nullvisitee. I found out that the visitors with no visitee names where visiting for events such as “Inaugural Reception”, Breakfast meetings and other events, from looking at the “Description” field.
+View(Nullvisitee)
+#I wanted to find out what these events are. So I tried to sort by table of description.
+sort(table(Nullvisitee$Description))
+
+
+
+                                                                   COFFEE 
+                                                                        1 
+                                                                    GUEST 
+                                                                        1 
+                                                                Interview 
+                                                                        1 
+                                                       INTERVIEW WITH NPR 
+                                                                        1 
+                                                       TEA WITH DR. BIDEN 
+                                                                        1 
+                                                                    Lunch 
+                                                                        2 
+                                                                BREAKFAST 
+                                                                        3 
+                                                     Dinner with Scholars 
+                                                                        3 
+                                                       Promotion Ceremony 
+                                                                        3 
+Breakfast with His Majesty Abdullah II of the Hashemite Kingdom of Jordan 
+                                                                        4 
+                                                          DEPARTURE PHOTO 
+                                                                        4 
+                                                    REINLISTMENT CEREMONY 
+                                                                        4 
+                                                                  Meeting 
+                                                                        7 
+                                         Breakfast with the Amir of Qatar 
+                                                                        8 
+                                  Meeting with Western Hemisphere Experts 
+                                                                        8 
+                                         Lunch for Ollanta Humala of Peru 
+                                                                       13 
+                                                                Breakfast 
+                                                                       15 
+                                          Breakfast with Newtown Families 
+                                                                       16 
+                                                                   Dinner 
+                                                                       16 
+                                                PRIVATE DESSERT RECEPTION 
+                                                                       19 
+                                              ST. PATRICK'S DAY RECEPTION 
+                                                                       33 
+                                                  Cinco de Mayo Breakfast 
+                                                                       38 
+          VPR Foundation Heritage Garden Dedication and Dessert Reception 
+                                                                       59 
+                                       2013 Teacher of the Year Reception 
+                                                                       69 
+                                Official Swearing-In Ceremony & Breakfast 
+                                                                       94 
+                                            Black History Month Reception 
+                                                                      115 
+                                                      Inaugural Reception 
+890	
+
+
+#Finding out the sum of visits for the top 23 (leaving out “visitors office”)
+sum(visits$visiteefullname == "potus " | visits$visiteefullname == "potus/flotus " | visits$visiteefullname == "flotus " | visits$visiteefullname == "jeanne lambrew" | visits$visiteefullname == "victoria mccullough" | visits$visiteefullname == "kyle lierman" | visits$visiteefullname == "gautam raghavan" | visits$visiteefullname == "heather foster" | visits$visiteefullname == "ronnie cho" | visits$visiteefullname == "todd park" | visits$visiteefullname == " " | visits$visiteefullname == "paul monteiro" | visits$visiteefullname == "gene sperling" | visits$visiteefullname == "zach kelly" | visits$visiteefullname == "julie rodriguez" | visits$visiteefullname == "nancy hogan" | visits$visiteefullname == "nate perkins" | visits$visiteefullname == "chelsea bollinger" | visits$visiteefullname == "patrick hidalgo" | visits$visiteefullname == "hallie schneir" | visits$visiteefullname == "brad jenkins" | visits$visiteefullname == "karen richardson" | visits$visiteefullname == "jason tengco")
+[1] 48773
+
+#I created a new subset (called “test”) of visits with the top 23 visitees
+test <- subset(visits, visiteefullname == "potus " | visiteefullname == "potus/flotus " | visiteefullname == "flotus " | visiteefullname == "jeanne lambrew" | visiteefullname == "victoria mccullough" | visiteefullname == "kyle lierman" | visiteefullname == "gautam raghavan" | visiteefullname == "heather foster" | visiteefullname == "ronnie cho" | visiteefullname == "todd park" | visiteefullname == " " | visiteefullname == "paul monteiro" | visiteefullname == "gene sperling" | visiteefullname == "zach kelly" | visiteefullname == "julie rodriguez" | visiteefullname == "nancy hogan" | visiteefullname == "nate perkins" | visiteefullname == "chelsea bollinger" | visiteefullname == "patrick hidalgo" | visiteefullname == "hallie schneir" | visiteefullname == "brad jenkins" | visiteefullname == "karen richardson" | visiteefullname == "jason tengco")
+
+#Formatting the APPT_START_TIME field the visits data frame and include the corrected date into a new column called “CAPPT_START_TIME”
+test$CAPPT_START_DATE = gsub("/13 ","/2013 ",test$APPT_START_DATE)
+
+#Format the newly created date field “CAPPT_START_TIME” to replace all “/13” with “/2013”
+ test$CAPPT_START_DATE = gsub("/13$","/2013",test$CAPPT_START_DATE)
+
+
+#Create a dataframe z with the corrected time
+ z = strptime(test$CAPPT_START_DATE,format="%m/%d/%Y %H:%M")
+
+
+#Add z into visits and called it “time”
+test$time = z
+
+#Draw a barplot with frequency of visits for the 23 visitee
+barplot(table(test$time$mon+1))
+
+#You will get this graph:
+ 
+
+#Compare this frequency distribution with that of all visits
+
+barplot(table(visits$time$mon+1))
+
+
+ 
+
+
+#Histogram of top 23 visitees
+hist(test$time$yday,breaks=100)
+
+ 
+
+
+
+#I could see that there were 446 visits for the Newtown visit. The Description says “NEWTOWN 1 GROUP TOUR WITH POTENTIAL POTUS DROP BY”. I created a new dataframe called “Newtownevent” to create a substring for this event. Then I sorted on the APPT_START_DATE
+Newtownevent <- visits[visits$Description == "NEWTOWN 1 GROUP TOUR WITH POTENTIAL POTUS DROP BY",]
+
+sort(table(Newtownevent$APPT_START_DATE))
+4/25/2013 10:30 
+            446 
+
+
+#Week 2:
+#“Flavor of the month”
+#Who was being visited the most at the White House for each month of the year this year; in other words who the “flavor of the month” was at the White House. Based on the data, I also wanted to hypothesize what the visits may have been about – social, serious, pegged to events, etc. 
+#I created a new data frame called “jan” that includes a subset of all the visits in January 2013 from the data frame called “test” which includes the details if the top 23 visitees.
+
+jan <-test[test$time$mon+1 == "1",]
+
+#Identifying who was visited the most in January 2013
+
+sort(table(jan$visiteefullname))
+
+#Table: January 2013 Visitees
+
+    patrick hidalgo        nate perkins             flotus  
+                  7                  14                  19 
+     hallie schneir     gautam raghavan    karen richardson 
+                 23                  26                  27 
+       brad jenkins      heather foster   chelsea bollinger 
+                 29                  44                  47 
+         zach kelly       gene sperling          ronnie cho 
+                 72                 102                 108 
+    julie rodriguez         nancy hogan       paul monteiro 
+                119                 124                 129 
+       jason tengco           todd park      jeanne lambrew 
+                205                 443                 514 
+victoria mccullough                                  potus  
+                592                 987                1154 
+       kyle lierman       potus/flotus  
+               1169                1305 
+
+Observation: The visitees with the most number of visitors in January 2013 was the first couple (1305 visitors), followed by Kyle Lierman (Public Engagement Liaison, 1169 visitors).  In fourth place, we see a “blank” (987 visitors). From our “Nullvisitee” dataframe, we observed that the “Description” field for the “black” visitees have been filled in events. In fifth place, we have Victoria McCullough (Organizing for Action, 592 visitors)
+
+Hypotheses: January 2013 seemed like a very social month at the White House, especially owing the following reasons:
+-	Visitors visiting the first couple together would mostly do so for social reasons than for discussing state affairs. Because for the latter, they may have just visit the President.
+-	The White House publicity liaison, Kyle Lierman, was a busy man in January 2013, and was the second most visited this month
+-	The “blank” visitee names, from previous analysis revealed that they signified social gatherings like coffee meeting and state receptions.
+
+#Let’s look at the Description field for January 2013
+
+#Table: January 2013 Description
+
+tail(sort(table(jan$Description)))
+
+
+                                                  Military Honor Guards supporting the Ambassador Credentialing Ceremony.   
+                                                                                                                        156 
+                                                                                     room # changed per Victoria McCullough 
+                                                                                                                        165 
+                                                                                                             WEST WING TOUR 
+                                                                                                                        209 
+WEST WING TOUR. Please clear this group for 11 AM  1 PM  3 PM  5PM  and 7PM on 1/20. Thank you.//This is duplicate appt//GK 
+                                                                                                                        592 
+                                                                                                        Inaugural Reception 
+                                                                                                                        890 
+                                                                                                                            
+                                                                                                                       4740 
+
+#Observation: Yup, mostly event. Very social month indeed.
+
+#I created a new data frame called “feb” that includes a subset of all the visits in February 2013 from the data frame called “test” which includes the details if the top 23 visitees.
+feb <-test[test$time$mon+1 == "2",]
+
+#Identifying who was visited the most in February 2013
+
+sort(table(feb$visiteefullname))
+
+#Table: February 2013 Visitees
+
+       jason tengco   chelsea bollinger        nate perkins 
+                 18                  66                  79 
+         ronnie cho     julie rodriguez       gene sperling 
+                 90                  97                 104 
+                       karen richardson           todd park 
+                117                 126                 128 
+     hallie schneir        kyle lierman             flotus  
+                144                 152                 166 
+        nancy hogan       potus/flotus         brad jenkins 
+                169                 175                 213 
+    patrick hidalgo       paul monteiro          zach kelly 
+                255                 283                 361 
+    gautam raghavan      jeanne lambrew      heather foster 
+                439                 505                 511 
+victoria mccullough              potus  
+                754                1743 
+
+#Observation: The President gets busy in February 2013. So does Victoria McCullough (Organizing for Action, 754 visitors), Heather Foster (Public Engagement Advisor, 511 visitors), Jeanne Lambrew (Deputy Director of the new White House Office of Health Reform, 505 visitors) and Gautam Raghavan (Associate Director of Public Engagement and LGBT Liaison, 439 visitors)
+
+#Visitors who visited POTUS most are:
+
+sort(table(feb[feb$visiteefullname=="potus ", c(30)]))
+
+				       benjamin jealous 
+                                                    3 
+          christopher rose                kevin small 
+                         3                          3 
+              maria linker            robert boguslaw 
+                         3                          3 
+            sanford bishop             wade henderson 
+                         3                          3 
+
+
+#Visitors who visited Victoria McCullough more than or equal to five times are:
+sort(table(feb[feb$visiteefullname=="victoria mccullough", c(30)]))
+
+          alexander fernie           benjamin sheehan 
+                         5                          5 
+         christopher farah            jacob szymanski 
+                         5                          5 
+             michael farah         nicholas corirossi 
+                         5                          5 
+                ryan perez                seth morris 
+                         5                          5 
+            nicholas wiger 
+7	
+
+
+#I created a new data frame called “mar” that includes a subset of all the visits in March 2013 from the data frame called “test” which includes the details if the top 23 visitees.
+mar <-test[test$time$mon+1 == "3",]
+
+#Identifying who was visited the most in March 2013
+
+sort(table(mar$visiteefullname))
+
+#Table: March 2013 Visitees
+
+         zach kelly        brad jenkins           todd park 
+                 25                  36                  37 
+                           kyle lierman     gautam raghavan 
+                 67                  69                  81 
+      gene sperling             flotus         jason tengco 
+                106                 125                 167 
+        nancy hogan        nate perkins     julie rodriguez 
+                237                 242                 270 
+   karen richardson      heather foster     patrick hidalgo 
+                315                 324                 324 
+     hallie schneir      jeanne lambrew          ronnie cho 
+                401                 448                 470 
+victoria mccullough       paul monteiro   chelsea bollinger 
+                507                 542                 899 
+      potus/flotus               potus  
+               1272                2025 
+
+#Observation: POTUS and POTUS/FLOTUS get busy again. Looks like another social month at the White House. Chelsea Bollinger (Staff Assistant, 899 visitors), Paul Monteiro (Public Engagement Advisor, 542 visitors) and Victoria McCullough (Organizing for Action, 507 visitors) are among top five visitees.
+#What’s going on at the White House? Let’s look at the Description.
+tail(sort(table(mar$Description)))
+
+time change per requestor 
+                                                                                                                                    168 
+The event is scheduled for the South Lawn  but in case of bad weather part of the event may be inside the Residence on the State Floor. 
+                                                                                                                                    181 
+                                                                                                       the event is on the state floor. 
+                                                                                                                                    309 
+                                                                                                       The event is on the State floor. 
+                                                                                                                                    631 
+                                                                                                       The event is on the State Floor. 
+                                                                                                                                    757 
+                                                                                                                                        
+                                                                                                                                   5995
+
+#Observation: March is a very social month at the White House.
+
+#I created a new data frame called “apr” that includes a subset of all the visits in Apr 2013 from the data frame called “test” which includes the details if the top 23 visitees.
+apr <-test[test$time$mon+1 == "4",]
+
+#Identifying who was visited the most in April 2013
+
+sort(table(apr$visiteefullname))
+
+#Table: April 2013 Visitees
+    gautam raghavan        brad jenkins       paul monteiro 
+                 34                  51                  58 
+       jason tengco     patrick hidalgo                     
+                 60                 106                 117 
+  chelsea bollinger          ronnie cho      hallie schneir 
+                141                 176                 184 
+   karen richardson        kyle lierman        nate perkins 
+                208                 254                 286 
+        nancy hogan      heather foster           todd park 
+                289                 296                 312 
+         zach kelly     julie rodriguez       potus/flotus  
+                343                 345                 372 
+            flotus       jeanne lambrew victoria mccullough 
+                460                 462                 666 
+      gene sperling              potus  
+                855                4116
+
+#Observation: After POTUS, Gene Sperling (Director of the National Economic Council and Assistant to the President for Economic Policy, 855 visitors) is visited the most. He is followed by Victoria McCullough (Organizing for Action, 666 visitors) and Jeanne Lambew (Deputy Director of the new White House Office of Health Reform, 462 visitors).
+
+#I created a new data frame called “may” that includes a subset of all the visits in May 2013 from the data frame called “test” which includes the details if the top 23 visitees.
+may <-test[test$time$mon+1 == "5",]
+
+#Identifying who was visited the most in May 2013
+
+sort(table(may$visiteefullname))
+
+#Table: May 2013 Visitees
+
+chelsea bollinger  karen richardson                      heather foster 
+                4                56                62                89 
+   hallie schneir     paul monteiro     gene sperling      kyle lierman 
+               93               104               124               138 
+        todd park       nancy hogan        ronnie cho      brad jenkins 
+              141               145               170               216 
+     nate perkins        zach kelly   julie rodriguez     potus/flotus  
+              231               285               301               324 
+  patrick hidalgo    jeanne lambrew           flotus       jason tengco 
+              347               485               546               549 
+  gautam raghavan            potus  
+              663              1655 
+
+#Observation: In addition to POTUS, Gautam Raghavan (Associate Director of Public Engagement and LGBT Liaison, 663 visitors), Jason Tengco (Advisor on Public Engagement for the White House Initiative on Asian Americans and Pacific Islanders, 549 visitors), FLOTUS (546 visitos), and Jeanne Lambrew (Deputy Director of the new White House Office of Health Reform, 485 visitors) are most visited.
+
+#I created a new data frame called “jun” that includes a subset of all the visits in June 2013 from the data frame called “test” which includes the details if the top 23 visitees.
+jun <-test[test$time$mon+1 == "6",]
+
+#Identifying who was visited the most in May 2013
+
+sort(table(jun$visiteefullname))
+
+#Table: Jun 2013 Visitees
+    jason tengco  patrick hidalgo  julie rodriguez                  
+              14               23               55               78 
+   gene sperling       zach kelly   hallie schneir      nancy hogan 
+              82              150              184              206 
+  jeanne lambrew    paul monteiro karen richardson     nate perkins 
+             271              288              293              308 
+       todd park   heather foster    potus/flotus           flotus  
+             378              384              398              412 
+    kyle lierman     brad jenkins       ronnie cho  gautam raghavan 
+             479              481              633              928 
+          potus  
+            2866 
+
+#Observation: In addition to POTUS, Gautam Raghavan (Associate Director of Public Engagement and LGBT Liaison, 928 visitors), Ronnie Cho ((Former) White House Liaison to Young Americans, 633 visitors), Brad Jenkins (Associate Director heading up coalition-building programs across a range of communities including non-profits, foundations, labor, and business, 481 visitors) and Kyle Lierman (Public Engagement Liaison, 479 visitors) were the most visited.
+#Month-wise “flavor of the month”
+#Methodology: Besides POTUS, POTUS/FLOTUS, and Blanks and Visitors Office, who was being visited the most at the White House and what cause they represent.
+#Jan 2013: Kyle Lierman (Public Engagement Liaison who coordinates activities for activities for Cabinet’s Public Engagement Offices and Champions of Change Program, 1169 visitors, second highest visitors for the month after POTUS)  
+#Feb 2013: Victoria McCullough (Organizing for Action, 754 visitors, second highest visitors for the month after POTUS)
+#Mar 2013: Paul Monteiro (Public Engagement Advisor who coordinates regional affairs, 542 visitors, fourth highest visitors for the month after POTUS, POTUS/FLOTUS, and Staff Assistant Chelsea Bollinger)
+#Apr 2013: Gene Sperling (Director of the National Economic Council and Assistant to the President for Economic Policy, 855 visitors, second highest visitors for the month after POTUS)
+#May 2013: Gautam Raghavan (Associate Director of Public Engagement and LGBT Liaison, 663 visitors, second highest visitors for the month after POTUS)
+#Jun 2013: Gautam Raghavan (Associate Director of Public Engagement and LGBT Liaison, 928 visitors, second highest visitors for the month after POTUS)
+
